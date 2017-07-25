@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <getopt.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <string.h>
 
 #include "bme280.h"
 
@@ -12,13 +11,6 @@
 
 // ----------------------------------------------------------------------------
 // I/O Utility (I2C)
-
-static inline bool bme280_i2c_setup(bme280_t *bme280, int slave) {
-    if (ioctl(bme280->fd, I2C_SLAVE, slave) < 0) {
-        return false;
-    }
-    return true;
-}
 
 bool bme280_i2c_open(bme280_t *bme280, int bus) {
     char device[128];
@@ -32,10 +24,29 @@ bool bme280_i2c_open(bme280_t *bme280, int bus) {
     return bme280_i2c_setup(bme280, DEFAULT_I2C_SLAVE);
 }
 
+bool bme280_i2c_setup(bme280_t *bme280, int slave) {
+    if (ioctl(bme280->fd, I2C_SLAVE, slave) < 0) {
+        return false;
+    }
+    return true;
+}
+
 // ----------------------------------------------------------------------------
 // I/O Utility (SPI)
 
-static inline bool bme280_spi_setup(bme280_t *bme280, int mode, int bits, int speed, int delay) {
+bool bme280_spi_open(bme280_t *bme280, int bus, int chip_select) {
+    char device[128];
+    sprintf(device, "/dev/spidev%d.%d", bus, chip_select);
+    int fd = open(device, O_RDWR);
+    if (fd < 0) {
+        return false;
+    }
+    bme280->fd = fd;
+    bme280->is_spi = true;
+    return bme280_spi_setup(bme280, DEFAULT_SPI_MODE, DEFAULT_SPI_BITS, DEFAULT_SPI_SPEED, DEFAULT_SPI_DELAY);
+}
+
+bool bme280_spi_setup(bme280_t *bme280, int mode, int bits, int speed, int delay) {
     if (ioctl(bme280->fd, SPI_IOC_WR_MODE, &mode) < 0) {
         return false;
     }
@@ -62,18 +73,6 @@ static inline bool bme280_spi_setup(bme280_t *bme280, int mode, int bits, int sp
     bme280->delay_usecs = delay;
 
     return true;
-}
-
-bool bme280_spi_open(bme280_t *bme280, int bus, int chip_select) {
-    char device[128];
-    sprintf(device, "/dev/spidev%d.%d", bus, chip_select);
-    int fd = open(device, O_RDWR);
-    if (fd < 0) {
-        return false;
-    }
-    bme280->fd = fd;
-    bme280->is_spi = true;
-    return bme280_spi_setup(bme280, DEFAULT_SPI_MODE, DEFAULT_SPI_BITS, DEFAULT_SPI_SPEED, DEFAULT_SPI_DELAY);
 }
 
 // ----------------------------------------------------------------------------

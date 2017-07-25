@@ -1,4 +1,4 @@
- // clang -Wall -Wextra -Wsign-conversion -o bme280 bme280.c main.c
+// clang -Wall -Wextra -Wsign-conversion -o bme280 bme280.c main.c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +9,8 @@
 
 void setup(void) {
     bme280_t bme280 = {};
-    if (!bme280_spi_open(&bme280, 0, 0)) {
-        printf("Cannot open device: %d.%d\n", 0, 0);
+    if (!bme280_i2c_open(&bme280, 1)) {
+        printf("Cannot open device\n");
         exit(1);
     }
     bme280_write_config(&bme280, OSRS_X2, OSRS_X16, OSRS_X1, MODE_NORMAL, SB_0_5, FILTER_16, 0);
@@ -19,8 +19,8 @@ void setup(void) {
 
 void write_log(const char *logfile) {
     bme280_t bme280 = {};
-    if (!bme280_spi_open(&bme280, 0, 0)) {
-        printf("Cannot open device: %d.%d\n", 0, 0);
+    if (!bme280_i2c_open(&bme280, 1)) {
+        printf("Cannot open device\n");
         exit(1);
     }
     bme280_read_calib(&bme280);

@@ -29,17 +29,24 @@ typedef struct {
 } bme280_t;
 
 bool bme280_i2c_open(bme280_t *bme280, int bus);
+bool bme280_i2c_setup(bme280_t *bme280, int slave);
+
 bool bme280_spi_open(bme280_t *bme280, int bus, int chip_select);
+bool bme280_spi_setup(bme280_t *bme280, int mode, int bits, int speed, int delay);
+
 void bme280_close(bme280_t *bme280);
 
 void bme280_write_config(bme280_t *bme280, uint8_t osrs_t, uint8_t osrs_p, uint8_t osrs_h, uint8_t mode, uint8_t t_sb, uint8_t filter, uint8_t spi3w_en);
+
 void bme280_read_raw_temp(bme280_t *bme280);
 void bme280_read_raw_press(bme280_t *bme280);
 void bme280_read_raw_hum(bme280_t *bme280);
 void bme280_read_calib(bme280_t *bme280);
+
 double bme280_get_compensate_temp(bme280_t *bme280);
 double bme280_get_compensate_press(bme280_t *bme280);
 double bme280_get_compensate_hum(bme280_t *bme280);
+
 void bme280_dump(bme280_t *bme280);
 
 #define DEFAULT_I2C_SLAVE   0x76
